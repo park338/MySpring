@@ -13,11 +13,21 @@ public abstract class AbstractBeanFactory extends DefaultStingletonBeanRegistry 
         }
 
         BeanDefinition beanDefinition = getBeanDefinition(name);
-        return createBean(name, beanDefinition);
+        return createBean(name, beanDefinition,null);
+    }
+    @Override
+    public Object getBean(String name,Object[] args) throws BeansException {
+        Object bean = getSingleton(name);
+        if(bean != null){
+            return bean;
+        }
+
+        BeanDefinition beanDefinition = getBeanDefinition(name);
+        return createBean(name, beanDefinition,args);
     }
 
     //通过class创建bean对象
     protected abstract BeanDefinition getBeanDefinition(String name) throws BeansException;
 
-    protected abstract Object createBean(String name, BeanDefinition beanDefinition) throws BeansException;
+    protected abstract Object createBean(String name, BeanDefinition beanDefinition,Object[] args) throws BeansException;
 }
