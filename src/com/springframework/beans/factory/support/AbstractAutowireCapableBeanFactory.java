@@ -1,7 +1,10 @@
 package com.springframework.beans.factory.support;
 
 import com.springframework.beans.BeansException;
+import com.springframework.beans.factory.PropertyValue;
+import com.springframework.beans.factory.PropertyValues;
 import com.springframework.beans.factory.config.BeanDefinition;
+import com.springframework.beans.factory.config.BeanReference;
 
 import java.lang.reflect.Constructor;
 
@@ -13,11 +16,10 @@ public abstract class  AbstractAutowireCapableBeanFactory  extends AbstractBeanF
         Object bean = null;
         try {
             bean = createBeanInstance(beanDefinition, beanName, args);
-
+            applyPropertyValues(beanName,bean,beanDefinition);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-
         addSingleton(beanName, bean);
         return bean;
     }
@@ -35,5 +37,28 @@ public abstract class  AbstractAutowireCapableBeanFactory  extends AbstractBeanF
         return instantiationStrategy.instantiate(beanDefinition,beanName,constructor,args);
     }
 
+    /**
+     * Bean 属性填充
+     */
+    protected void applyPropertyValues(String beanName, Object bean, BeanDefinition beanDefinition) throws BeansException {
+        try {
+            PropertyValues propertyValues = beanDefinition.getPropertyValues();
+            for (PropertyValue propertyValue : propertyValues.getPropertyValues()) {
+
+                String name = propertyValue.getName();
+                Object value = propertyValue.getValue();
+
+                if (value instanceof BeanReference) {
+                    // A 依赖 B，获取 B 的实例化
+                    BeanReference beanReference = (BeanReference) value;
+                    value = getBean(beanReference.getBeanName());
+                }
+                //TODO属性填充
+                //BeanUtil.setFieldValue(bean, name, value);
+            }
+        } catch (Exception e) {
+            throw new BeansException();
+        }
+    }
 
 }
